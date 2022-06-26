@@ -42,8 +42,29 @@ async function updateBio(req, res) {
     }
 }
 
+async function getProfile(req, res) {
+    const user_id = req.params.id;
+
+    if (!user_id) {
+        return res.status(400).json({
+            message: `USER WITH ID: ${user_id} DOES NOT EXIST`
+        });
+    }
+    try {
+        const data = await Profile.getProfileFromDB(user_id);
+        return res.status(200).json({
+            data
+        });
+    } catch (err) {
+        return res.status(404).json({
+            message: err.message
+        });
+    }
+}
+
 
 module.exports = {
     updateUserName,
-    updateBio
+    updateBio,
+    getProfile
 };

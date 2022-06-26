@@ -12,6 +12,12 @@ class Profile {
         const dbResult = await pool.query(sql, [user_id, newBio]);
         return dbResult.rows[0];
     }
+
+    static async getProfileFromDB(user_id) {
+        const sql = `SELECT * FROM users WHERE user_id = ($1)`;
+        const dbResult = await pool.query(sql, [user_id]);
+        return dbResult.rows[0];
+    }
 }
 
 module.exports = Profile;
