@@ -1,96 +1,59 @@
 const pool = require('../db')
 
-
-class Users{
-    static async findAllUsers(){
-        const sql = `Select * FROM users`;
-
+class Users {
+    static async getUsersFromDB() {
+        const sql = `SELECT * FROM users`;
         const dbResult = await pool.query(sql);
-
-        return dbResult.rows
+        return dbResult.rows;
     }
 
-    static async getUserName(username){
-        const sql = `Select * FROM users where username = ($1)`;
-
-        const dbResult = await pool.query(sql,[username])
-
-        return dbResult.rows[0]
+    static async getSpecificUser(user_id) {
+        const sql = `SELECT * FROM users WHERE user_id = ($1)`;
+        const dbResult = await pool.query(sql, [user_id]);
+        return dbResult.rows[0];
     }
 
-    static async getSpecificUser(user_id){
-        const sql = `Select * FROM users where user_id = ($1)`;
-
-        const dbResult = await pool.query(sql,[user_id])
-
-        return dbResult.rows[0]
+    static async getAllFriendsFromDB(user_id) {
+        const sql = `
+        SELECT users.*, friend_two FROM friends 
+        JOIN users ON friends.friend_two = users.user_id 
+        WHERE friend_one = ($1)`;
+        const dbResult = await pool.query(sql, [user_id]);
+        return dbResult.rows;
     }
 
-    static async updateUserName(user_id,newUserName){
-        const sql = `Update users set username = ($2) where user_id = ($1)`;
-
-        const dbResult = await pool.query(sql,[user_id,newUserName])
-
-        return dbResult.rows
+    static async unFriendFromDB(user_id, friend_two) {
+        const sql = `
+        DELETE FROM friends WHERE friend_one = ($1) AND friend_two = ($2) 
+        OR friend_two = ($1) AND friend_one = ($2) 
+        RETURNING *`;
+        const dbResult = await pool.query(sql, [user_id, friend_two]);
+        return dbResult.rows[0];
     }
 
-    static async updateEmail(username,newEmail){
-        const sql = `Update users set email = ($2) where username = ($1)`;
-
-        const dbResult = await pool.query(sql,[username,newEmail])
-
-        return dbResult.rows
+    static async addFriendFromDB(user_id, friend_two) {
+        const sql = `
+        INSERT INTO friends (friend_one, friend_two) 
+        VALUES ($1, $2)  
+        RETURNING *`;
+        const dbResult = await pool.query(sql, [user_id, friend_two]);
+        return dbResult.rows[0];
     }
 
-    static async updateFirstNameLastName(username,newFirstNameLastName){
-        const sql = `Update users set first_name = ($2) last_name = ($3) where username = ($1)`;
-
-        const dbResult = await pool.query(sql,[username,newFirstNameLastName])
-
-        return dbResult.rows
+    static async createUserFromDB(data) {
+        const { username, hashedPassword, email } = data;
+        const sql = `
+        INSERT INTO users (username, password, email) 
+        VALUES ($1, $2, $3) 
+        RETURNING *`;
+        const user = await pool.query(sql, [
+            username,
+            hashedPassword,
+            email,
+        ]);
+        return user.rows;
     }
 
-    static async updateUserName(username,newUserName){
-        const sql = `Update users set username = ($2) where username = ($1)`;
-
-        const dbResult = await pool.query(sql,[username,newUserName])
-
-        return dbResult.rows
-    }
-
-    static async updateDisplayName(username,newDisplayName){
-        const sql = `Update users set display_name = ($2) where username = ($1)`;
-
-        const dbResult = await pool.query(sql,[username,newDisplayName])
-
-        return dbResult.rows
-    }
-
-    static async updateBio(username,newBio){
-        const sql = `Update users set bio = ($2) where username = ($1)`;
-
-        const dbResult = await pool.query(sql,[username,newBio])
-
-        return dbResult.rows
-    }
-
-    static async createUser(data){
-        const sql = `insert into users (user) values ($1) returning *`;
-
-        const dbResult = await pool.query(sql,[data])
-
-        return dbResult.rows
-    }
-
-    static async removeUser(user_id){
-        if(!user_id) throw new Error(`No user found by the username of: ${user_id}`)
-
-        const sql = `Delete from users where user_id = ($1)`;
-
-        const dbResult = await pool.query(sql,[user_id])
-
-        return dbResult.rows[0]
-    }
 }
 
 module.exports = Users

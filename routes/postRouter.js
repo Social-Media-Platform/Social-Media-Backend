@@ -1,19 +1,35 @@
-const router = require('express').Router();;
-const {fetchPost,createPost,getAllOfUsersPost,hashTagPost,deletePost, updatePosts} = require('../controller/postController')
+const postRouter = require("express").Router();
+const {
+  getAllPosts,
+  getAllOfUsersPost,
+  getComments,
+  postComment,
+  deleteComment,
+  createPost,
+  deleteAPost,
+  addLike,
+  deleteLike,
+  getLikesForPost
+} = require("../controller/postController");
 
-router.get('/posts', fetchPost);
+postRouter.get("/posts", getAllPosts);
 
-router.get('/posts/:id', getAllOfUsersPost);
+postRouter.get("/posts/:id", getAllOfUsersPost);
 
-router.get('/posts/:id', hashTagPost);
+postRouter.get("/posts/:id/comments", getComments);
 
-router.post('/posts', createPost);
+postRouter.post("/posts/:id/comments", postComment);
 
-router.patch('/posts/:id', updatePosts);
+postRouter.delete("/comments/:id", deleteComment);
 
-router.delete('/posts/:id', deletePost);
+postRouter.post("/posts", createPost);
 
+postRouter.delete("/posts/:id", deleteAPost);
 
+postRouter.post("/posts/:id/likes", addLike);
 
+postRouter.get("/posts/:id/likes", getLikesForPost)
 
-module.exports = router
+postRouter.delete("/posts/:id/likes", deleteLike);
+
+module.exports = postRouter;
