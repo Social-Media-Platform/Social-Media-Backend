@@ -1,6 +1,6 @@
 const Users = require('../model/userModel');
 const bcrypt = require('bcrypt')
-const { generateToken } = require('../utils')
+const { generateToken, verifyToken } = require('../utils')
 const saltRounds = 10
 const pool = require('../db')
 
@@ -77,6 +77,17 @@ async function login(req, res) {
     }
 }
 
+async function authenticateUser(req, res) {
+    try {
+        const { userToken } = req.body;
+        if (!userToken) return res.status(500).json({ message: 'NOT AUTHENTICATED' })
+        const verify = await verifyToken(userToken, 'shhhhhhhhhhh');
+        return res.status(200).json({ isAuth: true });
+    } catch (err) {
+        return res.status(404).json({ message: err.message });
+    }
+}
+
 async function getUser(req, res) {
     const user_id = req.params.id;
 
@@ -115,14 +126,14 @@ async function unFriend(req, res) {
     const user_id = req.params.id;
     const { friend_two } = req.body;
 
-      try {
-          const data = await Users.unFriendFromDB(user_id, friend_two);
-          return res.status(200).json({
-              data,
-          })
-      } catch (err) {
-          res.status(404).json({
-              message: err.message
+    try {
+        const data = await Users.unFriendFromDB(user_id, friend_two);
+        return res.status(200).json({
+            data,
+        })
+    } catch (err) {
+        res.status(404).json({
+            message: err.message
         })
     }
 }
@@ -141,12 +152,13 @@ async function addFriend(req, res) {
             message: err.message
         })
     }
-  }
+}
 
 module.exports = {
     fetchUsers,
     createUser,
     login,
+    authenticateUser,
     getUser,
     getAllFriends,
     unFriend,
